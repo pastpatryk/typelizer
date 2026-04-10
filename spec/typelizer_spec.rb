@@ -12,6 +12,22 @@ RSpec.describe Typelizer do
     FileUtils.rmtree(custom_output_dir)
   end
 
+  it "enabled? returns true when Rails.env is development but ENV['RAILS_ENV'] is nil" do
+    original_typelizer = ENV.delete("TYPELIZER")
+    original_rails_env = ENV.delete("RAILS_ENV")
+    original_rack_env = ENV.delete("RACK_ENV")
+    Typelizer.instance_variable_set(:@legacy_env_migrated, nil)
+
+    allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new("development"))
+
+    expect(Typelizer.enabled?).to be true
+  ensure
+    ENV["TYPELIZER"] = original_typelizer if original_typelizer
+    ENV["RAILS_ENV"] = original_rails_env if original_rails_env
+    ENV["RACK_ENV"] = original_rack_env if original_rack_env
+    Typelizer.instance_variable_set(:@legacy_env_migrated, nil)
+  end
+
   it "has a rake task available", aggregate_failures: true do
     Rails.application.load_tasks
     expect { Rake::Task["typelizer:generate"].invoke }.not_to raise_error

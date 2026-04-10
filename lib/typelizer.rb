@@ -95,7 +95,11 @@ module Typelizer
     private
 
     def development?
-      ENV["RAILS_ENV"] == "development" || ENV["RACK_ENV"] == "development"
+      if defined?(Rails) && Rails.respond_to?(:env)
+        Rails.env.development?
+      else
+        ENV["RAILS_ENV"] == "development" || ENV["RACK_ENV"] == "development"
+      end
     end
 
     # Maps legacy DISABLE_TYPELIZER to TYPELIZER with a deprecation warning.
